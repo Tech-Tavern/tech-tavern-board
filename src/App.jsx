@@ -6,7 +6,6 @@ import initialData from "./data/initialData";
 
 export default function App() {
   const [data, setData] = useState(initialData);
-  // 1) handler that changes one list’s color
   const updateListColor = (listId, newColor) => {
     setData((prev) => ({
       ...prev,

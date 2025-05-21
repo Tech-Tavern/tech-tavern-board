@@ -69,7 +69,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       <h1 className="bg-indigo-500 text-white pl-4 text-2xl font-bold py-4">
         {board.title}
       </h1>
-      {/* gradient background + horizontal scrolling */}
       <Droppable droppableId={board.id} direction="horizontal" type="LIST">
         {(provided) => (
           <div
