@@ -1,3 +1,5 @@
+import { logout } from "../firebase";
+
 export default function Nav() {
   const links = [
     { name: "Home", href: "#home" },
@@ -20,6 +22,14 @@ export default function Nav() {
               </a>
             </li>
           ))}
+          <li>
+            <button
+              className="text-white cursor-pointer hover:text-orange-500 transition-colors"
+              onClick={logout}
+            >
+              Logout
+            </button>
+          </li>
         </ul>
       </div>
     </nav>

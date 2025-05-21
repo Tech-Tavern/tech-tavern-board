@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import Nav from "./components/Nav";
-import Sidebar from "./components/Sidebar";
-import Board from "./components/Board";
+import Nav from "./Nav";
+import Sidebar from "./Sidebar";
+import Board from "./Board";
 
 export default function Home() {
   const [data, setData] = useState({
