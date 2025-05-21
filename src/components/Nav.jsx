@@ -14,7 +14,7 @@ export default function Nav() {
             <li key={link.name}>
               <a
                 href={link.href}
-                className="text-white hover:text-gray-800 transition-colors"
+                className="text-white hover:text-orange-500 transition-colors"
               >
                 {link.name}
               </a>

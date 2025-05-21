@@ -20,12 +20,20 @@ export default function List({ list, cards, updateListColor }) {
       console.log("Clicked outside the menu");
     }
   };
+
+  function hexToRgba(hex, alpha = 1) {
+    const match = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+    if (!match) return hex; // fallback to original if invalid
+    const [, r, g, b] = match.map((x) => parseInt(x, 16));
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   return (
     <div
       onContextMenu={handleContextMenu}
       onClick={handleClick}
-      className="border-4 border-transparent hover:border-white w-64 p-4 rounded shadow-1xl ring-2 ring-black ring-opacity-5 flex flex-col cursor-default"
-      style={{ backgroundColor: color }}
+      className="border-4 border-transparent w-64 p-4 rounded shadow-1xl ring-2 ring-black ring-opacity-5 flex flex-col cursor-default"
+      style={{ backgroundColor: hexToRgba(color,0.7) }}
     >
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-bold text-white">{title}</h2>

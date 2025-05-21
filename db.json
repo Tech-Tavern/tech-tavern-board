@@ -1,0 +1,433 @@
+{
+    "boards": [
+        {
+            "id": 1,
+            "name": "Project Roadmap",
+            "ownerUid": "uid_ABC123",
+            "createdBy": "uid_ABC123",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-15T09:30:00.000Z",
+            "updatedAt": "2025-04-20T14:45:00.000Z"
+        },
+        {
+            "id": 2,
+            "name": "Team Sprint",
+            "ownerUid": "uid_DEF456",
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-02-01T11:00:00.000Z",
+            "updatedAt": "2025-05-10T08:20:00.000Z"
+        },
+        {
+            "id": 3,
+            "name": "Marketing Campaign",
+            "ownerUid": "uid_GHI789",
+            "createdBy": "uid_GHI789",
+            "updatedBy": "uid_GHI789",
+            "createdAt": "2025-03-01T12:00:00.000Z",
+            "updatedAt": "2025-06-15T10:30:00.000Z"
+        },
+        {
+            "id": 4,
+            "name": "Product Launch",
+            "ownerUid": "uid_JKL012",
+            "createdBy": "uid_JKL012",
+            "updatedBy": "uid_MNO345",
+            "createdAt": "2025-04-05T14:20:00.000Z",
+            "updatedAt": "2025-07-01T09:10:00.000Z"
+        },
+        {
+            "id": 5,
+            "name": "Customer Onboarding",
+            "ownerUid": "uid_PQR678",
+            "createdBy": "uid_PQR678",
+            "updatedBy": "uid_PQR678",
+            "createdAt": "2025-05-10T08:15:00.000Z",
+            "updatedAt": "2025-07-20T16:45:00.000Z"
+        }
+    ],
+    "boards_1_lists": [
+        {
+            "id": 10,
+            "boardId": 1,
+            "title": "Backlog",
+            "color": "#D8B4FE",
+            "position": 0,
+            "createdBy": "uid_ABC123",
+            "updatedBy": "uid_ABC123",
+            "createdAt": "2025-01-15T09:35:00.000Z",
+            "updatedAt": "2025-01-15T09:35:00.000Z"
+        },
+        {
+            "id": 11,
+            "boardId": 1,
+            "title": "In Progress",
+            "color": "#A5F3FC",
+            "position": 1,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-16T10:00:00.000Z",
+            "updatedAt": "2025-03-05T15:10:00.000Z"
+        },
+        {
+            "id": 13,
+            "boardId": 1,
+            "title": "Review",
+            "color": "#FDE68A",
+            "position": 2,
+            "createdBy": "uid_ABC123",
+            "updatedBy": "uid_ABC123",
+            "createdAt": "2025-01-20T11:00:00.000Z",
+            "updatedAt": "2025-04-01T12:00:00.000Z"
+        },
+        {
+            "id": 14,
+            "boardId": 1,
+            "title": "Done",
+            "color": "#50C878",
+            "position": 3,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-25T09:00:00.000Z",
+            "updatedAt": "2025-05-01T14:30:00.000Z"
+        }
+    ],
+    "boards_2_lists": [
+        {
+            "id": 12,
+            "boardId": 2,
+            "title": "Sprint Planning",
+            "color": "#E0E7FF",
+            "position": 0,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-02-01T11:05:00.000Z",
+            "updatedAt": "2025-02-02T12:00:00.000Z"
+        },
+        {
+            "id": 15,
+            "boardId": 2,
+            "title": "Development",
+            "color": "#A5F3FC",
+            "position": 1,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-02-05T09:30:00.000Z",
+            "updatedAt": "2025-05-15T16:45:00.000Z"
+        },
+        {
+            "id": 16,
+            "boardId": 2,
+            "title": "Testing",
+            "color": "#F3F4F6",
+            "position": 2,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-02-10T10:15:00.000Z",
+            "updatedAt": "2025-05-20T14:20:00.000Z"
+        }
+    ],
+    "boards_3_lists": [
+        {
+            "id": 17,
+            "boardId": 3,
+            "title": "Ideation",
+            "color": "#FFEDD5",
+            "position": 0,
+            "createdBy": "uid_GHI789",
+            "updatedBy": "uid_GHI789",
+            "createdAt": "2025-03-01T12:05:00.000Z",
+            "updatedAt": "2025-03-10T13:00:00.000Z"
+        },
+        {
+            "id": 18,
+            "boardId": 3,
+            "title": "Design",
+            "color": "#FBCFE8",
+            "position": 1,
+            "createdBy": "uid_GHI789",
+            "updatedBy": "uid_GHI789",
+            "createdAt": "2025-03-05T14:10:00.000Z",
+            "updatedAt": "2025-06-01T11:30:00.000Z"
+        },
+        {
+            "id": 19,
+            "boardId": 3,
+            "title": "Launch Prep",
+            "color": "#D1FAE5",
+            "position": 2,
+            "createdBy": "uid_GHI789",
+            "updatedBy": "uid_GHI789",
+            "createdAt": "2025-03-10T09:20:00.000Z",
+            "updatedAt": "2025-06-10T15:45:00.000Z"
+        }
+    ],
+    "boards_4_lists": [
+        {
+            "id": 20,
+            "boardId": 4,
+            "title": "Research",
+            "color": "#E0FFFF",
+            "position": 0,
+            "createdBy": "uid_JKL012",
+            "updatedBy": "uid_JKL012",
+            "createdAt": "2025-04-05T14:25:00.000Z",
+            "updatedAt": "2025-05-01T10:00:00.000Z"
+        },
+        {
+            "id": 21,
+            "boardId": 4,
+            "title": "Development",
+            "color": "#D8B4FE",
+            "position": 1,
+            "createdBy": "uid_JKL012",
+            "updatedBy": "uid_MNO345",
+            "createdAt": "2025-04-10T11:15:00.000Z",
+            "updatedAt": "2025-06-20T09:30:00.000Z"
+        },
+        {
+            "id": 22,
+            "boardId": 4,
+            "title": "QA",
+            "color": "#FCE7F3",
+            "position": 2,
+            "createdBy": "uid_JKL012",
+            "updatedBy": "uid_MNO345",
+            "createdAt": "2025-04-15T13:45:00.000Z",
+            "updatedAt": "2025-07-01T12:15:00.000Z"
+        }
+    ],
+    "boards_5_lists": [
+        {
+            "id": 23,
+            "boardId": 5,
+            "title": "Onboarding Flow",
+            "color": "#FEF3C7",
+            "position": 0,
+            "createdBy": "uid_PQR678",
+            "updatedBy": "uid_PQR678",
+            "createdAt": "2025-05-10T08:20:00.000Z",
+            "updatedAt": "2025-07-15T10:00:00.000Z"
+        },
+        {
+            "id": 24,
+            "boardId": 5,
+            "title": "Content Creation",
+            "color": "#C7D2FE",
+            "position": 1,
+            "createdBy": "uid_PQR678",
+            "updatedBy": "uid_PQR678",
+            "createdAt": "2025-05-12T09:50:00.000Z",
+            "updatedAt": "2025-07-18T14:30:00.000Z"
+        },
+        {
+            "id": 25,
+            "boardId": 5,
+            "title": "Feedback",
+            "color": "#FEE2E2",
+            "position": 2,
+            "createdBy": "uid_PQR678",
+            "updatedBy": "uid_PQR678",
+            "createdAt": "2025-05-15T10:10:00.000Z",
+            "updatedAt": "2025-07-20T16:00:00.000Z"
+        }
+    ],
+    "boards_1_lists_10_cards": [
+        {
+            "id": 100,
+            "listId": 10,
+            "title": "Set up project repo",
+            "description": "Initialize GitHub repo, add README and license",
+            "color": "default",
+            "position": 0,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_ABC123",
+            "updatedBy": "uid_ABC123",
+            "createdAt": "2025-01-15T09:40:00.000Z",
+            "updatedAt": "2025-01-15T09:40:00.000Z"
+        },
+        {
+            "id": 101,
+            "listId": 10,
+            "title": "Define schema",
+            "description": "Draft database schema and share with team",
+            "color": "#E0E7FF",
+            "position": 1,
+            "completed": true,
+            "archived": false,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-15T10:00:00.000Z",
+            "updatedAt": "2025-02-01T12:15:00.000Z"
+        },
+        {
+            "id": 104,
+            "listId": 10,
+            "title": "Write unit tests",
+            "description": "Cover core modules with Jest",
+            "color": "#D1FAE5",
+            "position": 2,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_ABC123",
+            "updatedBy": "uid_ABC123",
+            "createdAt": "2025-01-20T11:30:00.000Z",
+            "updatedAt": "2025-03-01T09:00:00.000Z"
+        },
+        {
+            "id": 105,
+            "listId": 10,
+            "title": "Review schema",
+            "description": "Get feedback from team",
+            "color": "#FDE68A",
+            "position": 3,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-22T14:40:00.000Z",
+            "updatedAt": "2025-04-02T10:20:00.000Z"
+        }
+    ],
+    "boards_1_lists_11_cards": [
+        {
+            "id": 102,
+            "listId": 11,
+            "title": "Implement authentication",
+            "description": "Set up user login and registration",
+            "color": "#FBBF24",
+            "position": 0,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-16T10:05:00.000Z",
+            "updatedAt": "2025-03-05T15:15:00.000Z"
+        },
+        {
+            "id": 106,
+            "listId": 11,
+            "title": "Add OAuth support",
+            "description": "Integrate Google and Facebook login",
+            "color": "#A5F3FC",
+            "position": 1,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_ABC123",
+            "updatedBy": "uid_ABC123",
+            "createdAt": "2025-01-18T09:20:00.000Z",
+            "updatedAt": "2025-02-20T14:00:00.000Z"
+        }
+    ],
+    "boards_1_lists_13_cards": [
+        {
+            "id": 107,
+            "listId": 13,
+            "title": "Draft review report",
+            "description": "Compile results and status",
+            "color": "#BBF7D0",
+            "position": 0,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_ABC123",
+            "updatedBy": "uid_ABC123",
+            "createdAt": "2025-01-25T08:45:00.000Z",
+            "updatedAt": "2025-03-10T16:30:00.000Z"
+        }
+    ],
+    "boards_1_lists_14_cards": [
+        {
+            "id": 108,
+            "listId": 14,
+            "title": "Archive old tasks",
+            "description": "Move completed cards to archive",
+            "color": "#D1D5DB",
+            "position": 0,
+            "completed": false,
+            "archived": true,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-26T10:15:00.000Z",
+            "updatedAt": "2025-03-20T11:05:00.000Z"
+        }
+    ],
+    "boards_2_lists_12_cards": [
+        {
+            "id": 103,
+            "listId": 12,
+            "title": "Design UI",
+            "description": "Create wireframes and mockups for the app",
+            "color": "#F472B6",
+            "position": 0,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-16T10:10:00.000Z",
+            "updatedAt": "2025-03-05T15:20:00.000Z"
+        },
+        {
+            "id": 109,
+            "listId": 12,
+            "title": "Review designs",
+            "description": "Get feedback from stakeholders",
+            "color": "#E0E7FF",
+            "position": 1,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_DEF456",
+            "updatedBy": "uid_DEF456",
+            "createdAt": "2025-01-18T11:00:00.000Z",
+            "updatedAt": "2025-03-10T09:45:00.000Z"
+        }
+    ],
+    "boards_3_lists_17_cards": [
+        {
+            "id": 110,
+            "listId": 17,
+            "title": "Brainstorm ideas",
+            "description": "Collect feature suggestions",
+            "color": "#FFEDD5",
+            "position": 0,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_GHI789",
+            "updatedBy": "uid_GHI789",
+            "createdAt": "2025-03-02T09:30:00.000Z",
+            "updatedAt": "2025-03-12T14:50:00.000Z"
+        }
+    ],
+    "boards_4_lists_20_cards": [
+        {
+            "id": 111,
+            "listId": 20,
+            "title": "Conduct research interview",
+            "description": "Talk to 5 users about pain points",
+            "color": "#E0FFFF",
+            "position": 0,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_JKL012",
+            "updatedBy": "uid_JKL012",
+            "createdAt": "2025-04-06T10:00:00.000Z",
+            "updatedAt": "2025-05-01T13:20:00.000Z"
+        }
+    ],
+    "boards_5_lists_23_cards": [
+        {
+            "id": 112,
+            "listId": 23,
+            "title": "Map user journey",
+            "description": "Outline the onboarding steps",
+            "color": "#FEF3C7",
+            "position": 0,
+            "completed": false,
+            "archived": false,
+            "createdBy": "uid_PQR678",
+            "updatedBy": "uid_PQR678",
+            "createdAt": "2025-05-11T08:30:00.000Z",
+            "updatedAt": "2025-07-16T11:10:00.000Z"
+        }
+    ]
+}

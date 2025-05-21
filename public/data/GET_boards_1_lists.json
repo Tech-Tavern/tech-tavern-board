@@ -1,0 +1,35 @@
+[
+    {
+        "id": 10,
+        "boardId": 1,
+        "title": "Backlog",
+        "color": "#D8B4FE",
+        "position": 0,
+        "createdBy": "uid_ABC123",
+        "updatedBy": "uid_ABC123",
+        "createdAt": "2025-01-15T09:35:00.000Z",
+        "updatedAt": "2025-01-15T09:35:00.000Z"
+    },
+    {
+        "id": 11,
+        "boardId": 1,
+        "title": "In Progress",
+        "color": "#A5F3FC",
+        "position": 1,
+        "createdBy": "uid_DEF456",
+        "updatedBy": "uid_DEF456",
+        "createdAt": "2025-01-16T10:00:00.000Z",
+        "updatedAt": "2025-03-05T15:10:00.000Z"
+    },
+    {
+        "id": 12,
+        "boardId": 2,
+        "title": "In Progress",
+        "color": "#A5F3FC",
+        "position": 2,
+        "createdBy": "uid_DEF456",
+        "updatedBy": "uid_DEF456",
+        "createdAt": "2025-01-16T10:00:00.000Z",
+        "updatedAt": "2025-03-05T15:10:00.000Z"
+    }
+]
