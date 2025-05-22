@@ -1,9 +1,164 @@
-// src/components/Board.jsx
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import List from "./List";
 
 export default function Board({ boardId, data, setData, updateListColor }) {
   const board = data.boards[boardId];
+
+  const handleAddList = (afterListId) => {
+    const newListId = `list-${Date.now()}`;
+    const newList = {
+      id: newListId,
+      boardId,
+      title: "New List",
+      color: "#FFFFFF",
+      position: 0,
+      cardIds: [],
+      createdBy: "uid_CURRENT_USER",
+      updatedBy: "uid_CURRENT_USER",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setData((prev) => {
+      const b = prev.boards[boardId];
+      const newLists = { ...prev.lists, [newListId]: newList };
+      let boardPatch = {};
+
+      if (b.columns) {
+        const colIds = b.columnOrder || Object.keys(b.columns);
+        const columnId =
+          colIds.find((cid) => b.columns[cid].listIds.includes(afterListId)) ||
+          colIds[0];
+
+        const oldIds = b.columns[columnId].listIds;
+        const idx = oldIds.indexOf(afterListId);
+        const newIds = [
+          ...oldIds.slice(0, idx + 1),
+          newListId,
+          ...oldIds.slice(idx + 1),
+        ];
+
+        boardPatch.columns = {
+          ...b.columns,
+          [columnId]: { ...b.columns[columnId], listIds: newIds },
+        };
+      } else {
+        boardPatch.listIds = [...(b.listIds || []), newListId];
+      }
+
+      return {
+        ...prev,
+        lists: newLists,
+        boards: {
+          ...prev.boards,
+          [boardId]: { ...b, ...boardPatch },
+        },
+      };
+    });
+  };
+
+  const handleRenameList = (listId, newTitle) => {
+    setData((prev) => ({
+      ...prev,
+      lists: {
+        ...prev.lists,
+        [listId]: {
+          ...prev.lists[listId],
+          title: newTitle,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    }));
+  };
+
+  const handleDeleteList = (listId) => {
+    setData((prev) => {
+      const b = prev.boards[boardId];
+
+      const { [listId]: _, ...remainingLists } = prev.lists;
+
+      const newListIds = (b.listIds ?? []).filter((id) => id !== listId);
+
+      let newColumns = b.columns;
+      let newColumnOrder = b.columnOrder;
+      if (b.columns) {
+        const colsEntries = Object.entries(b.columns)
+          .map(([colId, col]) => {
+            const filtered = col.listIds.filter((id) => id !== listId);
+            return [colId, { ...col, listIds: filtered }];
+          })
+          .filter(([, col]) => col.listIds.length > 0);
+
+        newColumns = Object.fromEntries(colsEntries);
+        newColumnOrder = (b.columnOrder ?? []).filter(
+          (colId) => newColumns[colId]
+        );
+      }
+
+      return {
+        ...prev,
+        lists: remainingLists,
+        boards: {
+          ...prev.boards,
+          [boardId]: {
+            ...b,
+            listIds: newListIds,
+            ...(b.columns && {
+              columns: newColumns,
+              columnOrder: newColumnOrder,
+            }),
+          },
+        },
+      };
+    });
+  };
+
+  const handleRenameCard = (cardId, newContent) => {
+    setData((prev) => ({
+      ...prev,
+      cards: {
+        ...prev.cards,
+        [cardId]: {
+          ...prev.cards[cardId],
+          content: newContent,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    }));
+  };
+
+  const handleAddCard = (listId, text) => {
+    const newCardId = `card-${Date.now()}`;
+    const newCard = {
+      id: newCardId,
+      listId,
+      content: text,
+      description: "",
+      color: "default",
+      position: data.lists[listId].cardIds.length,
+      completed: false,
+      archived: false,
+      createdBy: "uid_CURRENT_USER",
+      updatedBy: "uid_CURRENT_USER",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setData((prev) => ({
+      ...prev,
+      cards: {
+        ...prev.cards,
+        [newCardId]: newCard,
+      },
+      lists: {
+        ...prev.lists,
+        [listId]: {
+          ...prev.lists[listId],
+          cardIds: [...prev.lists[listId].cardIds, newCardId],
+        },
+      },
+    }));
+  };
 
   const onDragEnd = ({ source, destination, draggableId, type }) => {
     if (!destination) return;
@@ -136,7 +291,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
             {column.listIds.map((lid, idx) => {
               const list = data.lists[lid];
               const cards = list.cardIds.map((cid) => data.cards[cid]);
-
               return (
                 <Draggable key={lid} draggableId={lid} index={idx}>
                   {(dragProv) => (
@@ -150,6 +304,11 @@ export default function Board({ boardId, data, setData, updateListColor }) {
                         list={list}
                         cards={cards}
                         updateListColor={updateListColor}
+                        onAddList={handleAddList}
+                        onRenameList={handleRenameList}
+                        onDeleteList={handleDeleteList}
+                        onAddCard={handleAddCard}
+                        onRenameCard={handleRenameCard}
                       />
                     </div>
                   )}
@@ -169,12 +328,10 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         {board.title}
       </h1>
 
-      <div
-        className="flex h-screen overflow-auto p-6
-                bg-gradient-to-tl from-[#1a1c2b] via-[#23263a] to-[#2d3250]"
-      >
+      <div className="flex h-screen overflow-auto p-6 bg-gradient-to-tl from-[#1a1c2b] via-[#23263a] to-[#2d3250]">
         {(board.columnOrder ?? ["col-default"]).map(renderColumn)}
 
+        {/* This droppable lets you create a new column by dragging a list here */}
         <Droppable
           droppableId="__new_column__"
           direction="vertical"

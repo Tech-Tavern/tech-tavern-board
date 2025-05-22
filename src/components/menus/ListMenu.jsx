@@ -6,14 +6,15 @@ export default function ListMenu({
   color,
   onRename,
   onDelete,
+  onAdd, // added prop
 }) {
   return (
     <ul
-      className="absolute z-50 w-40 bg-white rounded-lg shadow-lg ring-2 ring-black ring-opacity-1 overflow-hidden text-md"
+      className="fixed z-50 w-40 bg-gradient-to-tl from-[#1a1c2b] via-[#23263a] to-[#2d3250] rounded-lg shadow-lg ring-2 ring-white ring-opacity-1 overflow-hidden text-md"
       style={{ top: y, left: x }}
     >
       {/* Color Picker */}
-      <li className="px-3 py-2 hover:bg-gray-100 flex items-center gap-2">
+      <li className="px-3 py-2 hover:bg-gray-100 flex items-center gap-2 text-white hover:text-black">
         <input
           type="color"
           value={color}
@@ -29,7 +30,7 @@ export default function ListMenu({
 
       {/* Rename */}
       <li
-        className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
+        className="px-3 py-2 hover:bg-white cursor-pointer flex items-center gap-2 text-white hover:text-black"
         onClick={(e) => {
           e.stopPropagation();
           onRename(id);
@@ -38,20 +39,20 @@ export default function ListMenu({
         <span>Rename List</span>
       </li>
 
-      {/* Add */}
+      {/* Add List */}
       <li
-        className="px-3 py-2 hover:bg-green-50 hover:text-green-600 cursor-pointer flex items-center gap-2"
+        className="px-3 py-2 hover:bg-green-50 hover:text-green-600 cursor-pointer flex items-center gap-2 text-white"
         onClick={(e) => {
           e.stopPropagation();
-          onAdd();
+          onAdd(id);
         }}
       >
-        <span>Add Card</span>
+        <span>Add List</span>
       </li>
 
       {/* Delete */}
       <li
-        className="px-3 py-2 hover:bg-red-50 hover:text-red-600 cursor-pointer flex items-center gap-2"
+        className="px-3 py-2 hover:bg-red-50 hover:text-red-600 cursor-pointer flex items-center gap-2 text-white"
         onClick={(e) => {
           e.stopPropagation();
           onDelete(id);
