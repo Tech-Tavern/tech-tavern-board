@@ -27,7 +27,7 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 bg-gradient-to-tl from-[#1a1c2b] via-[#23263a] to-[#2d3250]">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
         <h2 className="text-3xl font-extrabold text-gray-800 mb-6 text-center">
           {mode === "signup" ? "Create Account" : "Welcome Back"}
