@@ -1,6 +1,6 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import List from "./List";
-import { createList } from "../api/lists";
+import { createList, updateList } from "../api/lists";
 import { useAuth } from "../authContext";
 import { useState } from "react";
 
@@ -237,7 +237,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
     }));
   };
 
-  const onDragEnd = (result) => {
+  const onDragEnd = async (result) => {
     const { source, destination, draggableId, type } = result;
     if (!destination) return;
 
@@ -281,49 +281,48 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       const listId = draggableId.replace(/^list-/, "");
       const fromCol = source.droppableId;
       const toCol = destination.droppableId;
+      const newCols = { ...board.columns };
 
-      setData((prev) => {
-        const b = prev.boards[boardId];
-        const order = b.columnOrder ?? ["col-default"];
-        const columns = b.columns ?? {
-          "col-default": {
-            id: "col-default",
-            listIds: b.listIds ?? [],
+      // Remove from source column
+      newCols[fromCol].listIds.splice(source.index, 1);
+
+      // Insert into destination column
+      newCols[toCol].listIds.splice(destination.index, 0, listId);
+
+      // Update UI state optimistically
+      setData((prev) => ({
+        ...prev,
+        boards: {
+          ...prev.boards,
+          [boardId]: {
+            ...prev.boards[boardId],
+            columns: newCols,
+            columnOrder: prev.boards[boardId].columnOrder,
           },
-        };
+        },
+      }));
 
-        const nextOrder = [...order];
-        const nextCols = { ...columns };
+      // Calculate new positions explicitly for backend sync
+      const updatedPositions = newCols[toCol].listIds.map((id, index) => ({
+        id,
+        position: index,
+        columnPos: Number(toCol.replace("col-", "")),
+      }));
 
-        if (toCol === "__new_column__") {
-          const newCol = `col-${Date.now()}`;
-          nextOrder.push(newCol);
-          nextCols[newCol] = { id: newCol, listIds: [listId] };
-          // Remove from original
-          nextCols[fromCol] = {
-            ...nextCols[fromCol],
-            listIds: nextCols[fromCol].listIds.filter((id) => id !== listId),
-          };
-        } else {
-          // Remove from source
-          nextCols[fromCol] = {
-            ...nextCols[fromCol],
-            listIds: nextCols[fromCol].listIds.filter((id) => id !== listId),
-          };
-          // Insert into destination
-          const destIds = Array.from(nextCols[toCol].listIds);
-          destIds.splice(destination.index, 0, listId);
-          nextCols[toCol] = { ...nextCols[toCol], listIds: destIds };
-        }
-
-        return {
-          ...prev,
-          boards: {
-            ...prev.boards,
-            [boardId]: { ...b, columns: nextCols, columnOrder: nextOrder },
-          },
-        };
-      });
+      // Persist each list's new position to server
+      try {
+        await Promise.all(
+          updatedPositions.map((list) =>
+            updateList(boardId, list.id, {
+              position: list.position,
+              columnPos: list.columnPos,
+            })
+          )
+        );
+      } catch (err) {
+        console.error("Failed to update list positions:", err);
+        // Optionally rollback changes or show error notification
+      }
     }
   };
 
@@ -353,7 +352,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
             <h2 className="font-bold mb-2">{column.title}</h2>
 
             {column.listIds.map((lid, idx) => {
-              console.log(column);
               const list = data.lists[lid];
               const cards = list.cardIds.map((cid) => data.cards[cid]);
               return (

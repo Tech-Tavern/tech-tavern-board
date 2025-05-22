@@ -56,6 +56,34 @@ export default function Home() {
         }
       }
 
+      for (const boardId of boardOrderLocal) {
+        const cols = {};
+
+        // group by columnPos
+        boardsLookup[boardId].listIds.forEach((lid) => {
+          const colIdx = Number(listsLookup[lid].columnPos ?? 0);
+          const key = `col-${colIdx}`;
+          if (!cols[key]) cols[key] = { id: key, listIds: [] };
+          cols[key].listIds.push(lid);
+        });
+
+        // **sort each column’s listIds by the saved position**
+        Object.values(cols).forEach((col) => {
+          col.listIds.sort(
+            (a, b) =>
+              Number(listsLookup[a].position) - Number(listsLookup[b].position)
+          );
+        });
+
+        const columnOrder = Object.keys(cols).sort(
+          (a, b) =>
+            Number(a.replace("col-", "")) - Number(b.replace("col-", ""))
+        );
+
+        boardsLookup[boardId].columns = cols;
+        boardsLookup[boardId].columnOrder = columnOrder;
+      }
+
       // 3) fetch cards per list
       const cardsLookup = {};
       for (const listId of Object.keys(listsLookup)) {

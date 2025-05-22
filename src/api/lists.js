@@ -1,4 +1,3 @@
-// src/api/lists.js
 import { getAuth } from "firebase/auth";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -27,5 +26,19 @@ export async function createList(boardId, payload) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Could not create list (${res.status})`);
+  return res.json();
+}
+
+export async function updateList(boardId, listId, payload) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(await getUidHeader()),
+  };
+  const res = await fetch(`${baseUrl}/boards/${boardId}/lists/${listId}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Could not update list (${res.status})`);
   return res.json();
 }

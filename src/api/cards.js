@@ -1,4 +1,3 @@
-// src/api/cards.js
 import { getAuth } from "firebase/auth";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
