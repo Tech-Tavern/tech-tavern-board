@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import Nav from "./Nav";
 import Sidebar from "./Sidebar";
 import Board from "./Board";
+import { fetchBoards, fetchMyBoards } from "../api/boards";
+import { fetchLists } from "../api/lists";
+import { fetchCards } from "../api/cards";
 
 export default function Home() {
   const [data, setData] = useState({
@@ -16,16 +19,10 @@ export default function Home() {
   useEffect(() => {
     async function loadAll() {
       // 1) fetch boards
-      const boardsRes = await fetch("http://localhost:3009/boards");
-      if (!boardsRes.ok) throw new Error(`HTTP ${boardsRes.status}`);
+      const boardsArr = await fetchMyBoards();
 
-      const boardsArr = await boardsRes.json();
-
-
-      // 2) Sort by the string-typed position
       boardsArr.sort((a, b) => Number(a.position) - Number(b.position));
 
-      // 3) Build lookup + order
       const boardsLookup = {};
       const boardOrderLocal = boardsArr.map((b) => {
         const id = String(b.id);
@@ -33,62 +30,51 @@ export default function Home() {
         return id;
       });
 
-  
       // 2) fetch lists per board
       const listsLookup = {};
       for (const boardId of boardOrderLocal) {
         let listsArr = [];
         try {
-          const res = await fetch(
-            `http://localhost:3009/boards/${boardId}/lists`
-          );
-          if (res.ok) {
-            listsArr = await res.json();
-            // ✨ SORT LISTS BY POSITION
-            listsArr.sort((a, b) => Number(a.position) - Number(b.position));
-          }
+          listsArr = await fetchLists(boardId);
+          listsArr.sort((a, b) => Number(a.position) - Number(b.position));
         } catch (err) {
           console.error(`Error fetching lists for board ${boardId}:`, err);
         }
-  
+
         for (const l of listsArr) {
           const lid = String(l.id);
           listsLookup[lid] = {
             id: lid,
             title: l.title,
             cardIds: [],
+            position: l.position,
+            columnPos: l.columnPos,
             color: l.color,
             boardId: String(l.boardId),
           };
           boardsLookup[boardId].listIds.push(lid);
         }
       }
-  
+
       // 3) fetch cards per list
       const cardsLookup = {};
       for (const listId of Object.keys(listsLookup)) {
         let cardsArr = [];
         try {
           const { boardId } = listsLookup[listId];
-          const res = await fetch(
-            `http://localhost:3009/boards/${boardId}/lists/${listId}/cards`
-          );
-          if (res.ok) {
-            cardsArr = await res.json();
-            // ✨ SORT CARDS BY POSITION (optional)
-            cardsArr.sort((a, b) => Number(a.position) - Number(b.position));
-          }
+          cardsArr = await fetchCards(boardId, listId);
+          cardsArr.sort((a, b) => Number(a.position) - Number(b.position));
         } catch (err) {
           console.error(`Error fetching cards for list ${listId}:`, err);
         }
-  
+
         for (const c of cardsArr) {
           const cid = String(c.id);
           cardsLookup[cid] = { id: cid, content: c.title, listId };
           listsLookup[listId].cardIds.push(cid);
         }
       }
-  
+
       // commit data and initial selection
       setData({
         boards: boardsLookup,
@@ -98,10 +84,9 @@ export default function Home() {
       });
       setSelectedBoardId(boardOrderLocal[0] ?? null);
     }
-  
+
     loadAll().catch(console.error);
   }, []);
-  
 
   const toggleSidebar = () => setIsSidebarOpen((open) => !open);
 

@@ -1,49 +1,68 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import List from "./List";
+import { createList } from "../api/lists";
+import { useAuth } from "../authContext";
+import { useState } from "react";
 
 export default function Board({ boardId, data, setData, updateListColor }) {
   const board = data.boards[boardId];
+  const { user, loading } = useAuth();
 
-  const handleAddList = (afterListId) => {
-    const newListId = `list-${Date.now()}`;
-    const newList = {
-      id: newListId,
+  // console.log(user);
+
+  const handleAddList = async (afterListId) => {
+    // 1) create a temp list for optimistic UI
+    const tempId = `temp-${Date.now()}`;
+    const tempList = {
+      id: tempId,
       boardId,
       title: "New List",
       color: "#FFFFFF",
       position: 0,
       cardIds: [],
-      createdBy: "uid_CURRENT_USER",
-      updatedBy: "uid_CURRENT_USER",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
 
+    // 2) update state optimistically
     setData((prev) => {
       const b = prev.boards[boardId];
-      const newLists = { ...prev.lists, [newListId]: newList };
-      let boardPatch = {};
 
+      // always inject the new list object
+      const newLists = { ...prev.lists, [tempId]: tempList };
+
+      // decide how to patch the board
+      let boardPatch;
       if (b.columns) {
-        const colIds = b.columnOrder || Object.keys(b.columns);
-        const columnId =
-          colIds.find((cid) => b.columns[cid].listIds.includes(afterListId)) ||
-          colIds[0];
-
-        const oldIds = b.columns[columnId].listIds;
+        // multi-column mode
+        // find which column the "after" list is in
+        const colId = b.columnOrder.find((cid) =>
+          b.columns[cid].listIds.includes(afterListId)
+        );
+        const oldIds = b.columns[colId].listIds;
         const idx = oldIds.indexOf(afterListId);
-        const newIds = [
-          ...oldIds.slice(0, idx + 1),
-          newListId,
-          ...oldIds.slice(idx + 1),
-        ];
 
-        boardPatch.columns = {
+        // insert new tempId into that column’s listIds
+        const newCols = {
           ...b.columns,
-          [columnId]: { ...b.columns[columnId], listIds: newIds },
+          [colId]: {
+            ...b.columns[colId],
+            listIds: [
+              ...oldIds.slice(0, idx + 1),
+              tempId,
+              ...oldIds.slice(idx + 1),
+            ],
+          },
+        };
+
+        // preserve the same columnOrder
+        boardPatch = {
+          columns: newCols,
+          columnOrder: b.columnOrder,
         };
       } else {
-        boardPatch.listIds = [...(b.listIds || []), newListId];
+        // single-column mode
+        boardPatch = {
+          listIds: [...(b.listIds || []), tempId],
+        };
       }
 
       return {
@@ -51,10 +70,70 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         lists: newLists,
         boards: {
           ...prev.boards,
-          [boardId]: { ...b, ...boardPatch },
+          [boardId]: {
+            ...b,
+            ...boardPatch,
+          },
         },
       };
     });
+
+    // 3) send to server, then replace tempId with real id
+    try {
+      const saved = await createList(
+        boardId,
+        {
+          title: tempList.title,
+          position: tempList.position,
+          color: tempList.color,
+        },
+        user.uid
+      );
+
+      setData((prev) => {
+        // remove temp
+        const { [tempId]: _, ...rest } = prev.lists;
+        // inject real
+        const updatedLists = { ...rest, [saved.id]: { ...saved, cardIds: [] } };
+
+        // swap IDs in whichever ordering array is active
+        const b = prev.boards[boardId];
+        let newBoard;
+        if (b.columns) {
+          // multi-column: map through each column’s listIds
+          const newCols = {};
+          for (const cid of b.columnOrder) {
+            newCols[cid] = {
+              ...b.columns[cid],
+              listIds: b.columns[cid].listIds.map((id) =>
+                id === tempId ? String(saved.id) : id
+              ),
+            };
+          }
+          newBoard = { ...b, columns: newCols, columnOrder: b.columnOrder };
+        } else {
+          // single-column
+          newBoard = {
+            ...b,
+            listIds: b.listIds.map((id) =>
+              id === tempId ? String(saved.id) : id
+            ),
+          };
+        }
+
+        return {
+          ...prev,
+          lists: updatedLists,
+          boards: {
+            ...prev.boards,
+            [boardId]: newBoard,
+          },
+        };
+      });
+    } catch (err) {
+      console.error("Failed to create list:", err);
+      // optionally roll back the optimistic update
+    }
   };
 
   const handleRenameList = (listId, newTitle) => {
@@ -274,6 +353,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
             <h2 className="font-bold mb-2">{column.title}</h2>
 
             {column.listIds.map((lid, idx) => {
+              console.log(column);
               const list = data.lists[lid];
               const cards = list.cardIds.map((cid) => data.cards[cid]);
               return (
@@ -282,12 +362,17 @@ export default function Board({ boardId, data, setData, updateListColor }) {
                   draggableId={`list-${lid}`}
                   index={idx}
                 >
-                  {(dragProv) => (
+                  {(dragProv, snapshot) => (
                     <div
                       ref={dragProv.innerRef}
                       {...dragProv.draggableProps}
                       {...dragProv.dragHandleProps}
-                      className="mb-4"
+                      className={
+                        `mb-4 transition-opacity duration-150 ` +
+                        (snapshot.isDragging
+                          ? "opacity-75 cursor-grabbing"
+                          : "opacity-100")
+                      }
                     >
                       <List
                         list={list}
