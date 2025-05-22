@@ -74,9 +74,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
   const handleDeleteList = (listId) => {
     setData((prev) => {
       const b = prev.boards[boardId];
-
       const { [listId]: _, ...remainingLists } = prev.lists;
-
       const newListIds = (b.listIds ?? []).filter((id) => id !== listId);
 
       let newColumns = b.columns;
@@ -160,18 +158,23 @@ export default function Board({ boardId, data, setData, updateListColor }) {
     }));
   };
 
-  const onDragEnd = ({ source, destination, draggableId, type }) => {
+  const onDragEnd = (result) => {
+    const { source, destination, draggableId, type } = result;
     if (!destination) return;
 
     if (type === "CARD") {
+      const srcListId = source.droppableId.replace(/^list-/, "");
+      const dstListId = destination.droppableId.replace(/^list-/, "");
+      const cardId = draggableId.replace(/^card-/, "");
+
       setData((prev) => {
-        const start = prev.lists[source.droppableId];
-        const finish = prev.lists[destination.droppableId];
+        const start = prev.lists[srcListId];
+        const finish = prev.lists[dstListId];
 
         if (start === finish) {
           const ids = Array.from(start.cardIds);
           ids.splice(source.index, 1);
-          ids.splice(destination.index, 0, draggableId);
+          ids.splice(destination.index, 0, cardId);
           return {
             ...prev,
             lists: { ...prev.lists, [start.id]: { ...start, cardIds: ids } },
@@ -181,7 +184,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         const startIds = Array.from(start.cardIds);
         startIds.splice(source.index, 1);
         const finishIds = Array.from(finish.cardIds);
-        finishIds.splice(destination.index, 0, draggableId);
+        finishIds.splice(destination.index, 0, cardId);
 
         return {
           ...prev,
@@ -195,72 +198,54 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       return;
     }
 
-    if (type !== "LIST") return;
+    if (type === "LIST") {
+      const listId = draggableId.replace(/^list-/, "");
+      const fromCol = source.droppableId;
+      const toCol = destination.droppableId;
 
-    setData((prev) => {
-      const b = prev.boards[boardId];
-      const order = b.columnOrder ?? ["col-default"];
-      const columns = b.columns ?? {
-        "col-default": {
-          id: "col-default",
-          listIds: b.listIds ?? [],
-        },
-      };
-
-      let nextOrder = [...order];
-      let nextCols = { ...columns };
-
-      if (destination.droppableId === "__new_column__") {
-        const newCol = `col-${Date.now()}`;
-        const from = source.droppableId;
-
-        nextOrder.push(newCol);
-        nextCols[from] = {
-          ...nextCols[from],
-          listIds: nextCols[from].listIds.filter((id) => id !== draggableId),
+      setData((prev) => {
+        const b = prev.boards[boardId];
+        const order = b.columnOrder ?? ["col-default"];
+        const columns = b.columns ?? {
+          "col-default": {
+            id: "col-default",
+            listIds: b.listIds ?? [],
+          },
         };
-        nextCols[newCol] = {
-          id: newCol,
-          listIds: [draggableId],
-        };
-      } else {
-        const from = source.droppableId;
-        const to = destination.droppableId;
 
-        if (from === to) {
-          const ids = Array.from(nextCols[from].listIds);
-          ids.splice(source.index, 1);
-          ids.splice(destination.index, 0, draggableId);
-          nextCols[from] = { ...nextCols[from], listIds: ids };
+        const nextOrder = [...order];
+        const nextCols = { ...columns };
+
+        if (toCol === "__new_column__") {
+          const newCol = `col-${Date.now()}`;
+          nextOrder.push(newCol);
+          nextCols[newCol] = { id: newCol, listIds: [listId] };
+          // Remove from original
+          nextCols[fromCol] = {
+            ...nextCols[fromCol],
+            listIds: nextCols[fromCol].listIds.filter((id) => id !== listId),
+          };
         } else {
-          const fromIds = Array.from(nextCols[from].listIds);
-          fromIds.splice(source.index, 1);
-          const toIds = Array.from(nextCols[to].listIds);
-          toIds.splice(destination.index, 0, draggableId);
-          nextCols[from] = { ...nextCols[from], listIds: fromIds };
-          nextCols[to] = { ...nextCols[to], listIds: toIds };
+          // Remove from source
+          nextCols[fromCol] = {
+            ...nextCols[fromCol],
+            listIds: nextCols[fromCol].listIds.filter((id) => id !== listId),
+          };
+          // Insert into destination
+          const destIds = Array.from(nextCols[toCol].listIds);
+          destIds.splice(destination.index, 0, listId);
+          nextCols[toCol] = { ...nextCols[toCol], listIds: destIds };
         }
-      }
 
-      nextOrder = nextOrder.filter((id) => nextCols[id]?.listIds.length);
-      nextCols = Object.fromEntries(nextOrder.map((id) => [id, nextCols[id]]));
-
-      if (nextOrder.length === 0) {
-        nextOrder.push("col-default");
-        nextCols["col-default"] = {
-          id: "col-default",
-          listIds: [],
+        return {
+          ...prev,
+          boards: {
+            ...prev.boards,
+            [boardId]: { ...b, columns: nextCols, columnOrder: nextOrder },
+          },
         };
-      }
-
-      return {
-        ...prev,
-        boards: {
-          ...prev.boards,
-          [boardId]: { ...b, columnOrder: nextOrder, columns: nextCols },
-        },
-      };
-    });
+      });
+    }
   };
 
   const cols = board.columns ?? {
@@ -292,7 +277,11 @@ export default function Board({ boardId, data, setData, updateListColor }) {
               const list = data.lists[lid];
               const cards = list.cardIds.map((cid) => data.cards[cid]);
               return (
-                <Draggable key={lid} draggableId={lid} index={idx}>
+                <Draggable
+                  key={`list-${lid}`}
+                  draggableId={`list-${lid}`}
+                  index={idx}
+                >
                   {(dragProv) => (
                     <div
                       ref={dragProv.innerRef}
@@ -328,7 +317,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         {board.title}
       </h1>
 
-      <div className="flex h-screen overflow-auto p-6 bg-gradient-to-tl from-[#1a1c2b] via-[#23263a] to-[#2d3250]">
+      <div className="flex h-screen overflow-x-auto p-6 bg-gradient-to-tl from-[#1a1c2b] via-[#23263a] to-[#2d3250]">
         {(board.columnOrder ?? ["col-default"]).map(renderColumn)}
 
         {/* This droppable lets you create a new column by dragging a list here */}

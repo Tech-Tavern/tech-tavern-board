@@ -4,9 +4,7 @@ import { useAuth } from "../authContext";
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  console.log("PROTECTED: ", user, loading);
-  if (loading) return null; // or a spinner
-  // if (user) return <Navigate to="/" replace />;
+  if (loading) return null; 
   if (!user) return <Navigate to="/signin" replace />;
   return children;
 }

@@ -108,7 +108,7 @@ export default function List({
       onContextMenu={handleContextMenu}
       onClick={hideMenu}
       className="relative border-4 border-transparent w-64 p-4 rounded-lg flex flex-col cursor-default ring-white ring-2 shadow-[0_0_15px_2px_rgba(255,255,255,0.06)] hover:shadow-[0_0_22px_4px_rgba(255,255,255,0.45)] transition-shadow duration-300"
-      style={{ backgroundColor: hexToRgba(color, 0.7) }}
+      style={{ backgroundColor: hexToRgba(color, 1) }}
     >
       {/* Title / Inline Edit */}
       <div className="flex items-center justify-between mb-3">
