@@ -485,13 +485,30 @@ export default function Board({ boardId, data, setData, updateListColor }) {
           direction="vertical"
           type="LIST"
         >
-          {(prov) => (
+          {(provided, snapshot) => (
             <div
-              ref={prov.innerRef}
-              {...prov.droppableProps}
-              className="min-w-[280px] flex-shrink-0 p-4 flex items-center justify-center text-gray-600"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`
+        min-w-[286px] mx-4 flex-shrink-0 p-4 flex items-center justify-center text-gray-600
+        transition-all duration-200
+
+        border-2 border-dashed border-transparent
+
+        /* solid outline + background when dragging over */
+        ${snapshot.isDraggingOver ? "border-white bg-white/10" : ""}
+      `}
             >
-              {prov.placeholder}
+              {" "}
+              <span className="text-white font-semibold">
+                Drop here to create a column
+              </span>
+              {snapshot.isDraggingOver ? (
+                <span className="text-white font-semibold">
+                </span>
+              ) : (
+                provided.placeholder
+              )}
             </div>
           )}
         </Droppable>
