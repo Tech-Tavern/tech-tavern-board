@@ -137,7 +137,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
     }
   };
 
-  const handleRenameList = (listId, newTitle) => {
+  const handleRenameList = async (listId, newTitle) => {
     setData((prev) => ({
       ...prev,
       lists: {
@@ -149,6 +149,12 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         },
       },
     }));
+
+    try {
+      await updateList(boardId, listId, { title: newTitle });
+    } catch (err) {
+      console.error("Failed to rename list:", err);
+    }
   };
 
   const handleDeleteList = (listId) => {
