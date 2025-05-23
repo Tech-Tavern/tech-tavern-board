@@ -3,7 +3,7 @@ import Nav from "./Nav";
 import Sidebar from "./Sidebar";
 import Board from "./Board";
 import { fetchMyBoards } from "../api/boards";
-import { fetchLists } from "../api/lists";
+import { fetchLists, updateList } from "../api/lists";
 import { fetchCards } from "../api/cards";
 
 export default function Home() {
@@ -127,14 +127,34 @@ export default function Home() {
 
   const toggleSidebar = () => setIsSidebarOpen((open) => !open);
 
-  const updateListColor = (listId, newColor) =>
+  const updateListColor = async (listId, newColor) => {
     setData((prev) => ({
       ...prev,
       lists: {
         ...prev.lists,
-        [listId]: { ...prev.lists[listId], color: newColor },
+        [listId]: {
+          ...prev.lists[listId],
+          color: newColor,
+        },
       },
     }));
+
+    try {
+      await updateList(selectedBoardId, Number(listId), { color: newColor });
+    } catch (err) {
+      console.error("Failed to save color:", err);
+      setData((prev) => ({
+        ...prev,
+        lists: {
+          ...prev.lists,
+          [listId]: {
+            ...prev.lists[listId],
+            color: prev.lists[listId].color,
+          },
+        },
+      }));
+    }
+  };
 
   if (!selectedBoardId) {
     return (
