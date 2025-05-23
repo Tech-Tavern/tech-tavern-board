@@ -57,23 +57,33 @@ export default function Home() {
       }
 
       for (const boardId of boardOrderLocal) {
-        const cols = {};
+        // Determine max column index from existing lists
+        const colIndices = boardsLookup[boardId].listIds.map((lid) =>
+          Number(listsLookup[lid].columnPos ?? 0)
+        );
+        const maxIdx = colIndices.length ? Math.max(...colIndices) : 0;
 
-        // group by columnPos
+        // Seed cols with empty buckets for 0..maxIdx
+        const cols = {};
+        for (let i = 0; i <= maxIdx; i++) {
+          cols[`col-${i}`] = { id: `col-${i}`, listIds: [] };
+        }
+
+        // Group lists into their respective column buckets
         boardsLookup[boardId].listIds.forEach((lid) => {
           const colIdx = Number(listsLookup[lid].columnPos ?? 0);
-          const key = `col-${colIdx}`;
-          if (!cols[key]) cols[key] = { id: key, listIds: [] };
-          cols[key].listIds.push(lid);
+          cols[`col-${colIdx}`].listIds.push(lid);
         });
 
+        // Sort each column's listIds by position
+        // Reset each list's position to its index within the column (0-based)
         Object.values(cols).forEach((col) => {
-          col.listIds.sort(
-            (a, b) =>
-              Number(listsLookup[a].position) - Number(listsLookup[b].position)
-          );
+          col.listIds.forEach((lid, idx) => {
+            listsLookup[lid].position = idx;
+          });
         });
 
+        // Build columnOrder in ascending numeric order
         const columnOrder = Object.keys(cols).sort(
           (a, b) =>
             Number(a.replace("col-", "")) - Number(b.replace("col-", ""))

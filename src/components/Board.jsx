@@ -5,6 +5,7 @@ import { useAuth } from "../authContext";
 
 export default function Board({ boardId, data, setData, updateListColor }) {
   const board = data.boards[boardId];
+  console.log("Board data:", board);
   const { user } = useAuth();
 
   const handleAddList = async (afterListId) => {
@@ -241,35 +242,57 @@ export default function Board({ boardId, data, setData, updateListColor }) {
     const { source, destination, draggableId, type } = result;
     if (!destination) return;
 
-    // if (type === "LIST" && destination.droppableId === "__new_column__") {
+    if (type === "LIST" && destination.droppableId === "__new_column__") {
+      const currentCols = board.columnOrder || [];
+      const newIndex = currentCols.length;
+      const newColId = `col-${newIndex}`;
 
-    //   const res = await createColumn(boardId);
-    //   const newColId = res.id; // e.g. "col-7"
-    //   const newColPos = res.position; // numeric, e.g. 7
+      setData((prev) => {
+        const b = prev.boards[boardId];
+        const newCols = {
+          ...b.columns,
+          [newColId]: { id: newColId, listIds: [] },
+        };
+        const newOrder = [...(b.columnOrder || []), newColId];
 
-    //   setData((prev) => {
-    //     const b = prev.boards[boardId];
-    //     const columns = {
-    //       ...b.columns,
-    //       [newColId]: { id: newColId, listIds: [] },
-    //     };
-    //     const columnOrder = [...b.columnOrder, newColId];
-    //     return {
-    //       ...prev,
-    //       boards: {
-    //         ...prev.boards,
-    //         [boardId]: { ...b, columns, columnOrder },
-    //       },
-    //     };
-    //   });
+        // Remove from old column
+        const fromCols = { ...newCols };
+        const srcListIds = [...fromCols[source.droppableId].listIds];
+        srcListIds.splice(source.index, 1);
+        fromCols[source.droppableId] = {
+          ...fromCols[source.droppableId],
+          listIds: srcListIds,
+        };
 
-    //   return onDragEnd({
-    //     source,
-    //     destination: { ...destination, droppableId: newColId },
-    //     draggableId,
-    //     type,
-    //   });
-    // }
+        // Add to new column
+        const tgtListIds = [
+          ...fromCols[newColId].listIds,
+          draggableId.replace(/^list-/, ""),
+        ];
+        fromCols[newColId] = { ...fromCols[newColId], listIds: tgtListIds };
+
+        return {
+          ...prev,
+          boards: {
+            ...prev.boards,
+            [boardId]: {
+              ...b,
+              columns: fromCols,
+              columnOrder: newOrder,
+            },
+          },
+        };
+      });
+
+      const listId = Number(draggableId.replace(/^list-/, ""));
+      try {
+        await updateList(boardId, listId, { columnPos: newIndex });
+      } catch (err) {
+        console.error("Failed to update list columnPos:", err);
+      }
+
+      return;
+    }
 
     if (type === "CARD") {
       const srcListId = source.droppableId.replace(/^list-/, "");
