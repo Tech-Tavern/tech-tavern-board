@@ -20,7 +20,9 @@ export default function List({
     e.preventDefault();
     setMenu({ visible: true, x: e.clientX, y: e.clientY });
   };
-  const hideMenu = () => setMenu({ visible: false, x: 0, y: 0 });
+  const hideMenu = () => setMenu({ 
+    visible: false, x: 0, y: 0 
+  }, console.log("L ID: " + list.id + " POS: " + list.position, "COL: " + list.columnPos));
 
   // inline‐title edit
   const [isEditingTitle, setIsEditingTitle] = useState(false);

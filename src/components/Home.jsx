@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Nav from "./Nav";
 import Sidebar from "./Sidebar";
 import Board from "./Board";
-import { fetchBoards, fetchMyBoards } from "../api/boards";
+import { fetchMyBoards } from "../api/boards";
 import { fetchLists } from "../api/lists";
 import { fetchCards } from "../api/cards";
 
@@ -26,7 +26,7 @@ export default function Home() {
       const boardsLookup = {};
       const boardOrderLocal = boardsArr.map((b) => {
         const id = String(b.id);
-        boardsLookup[id] = { id, title: b.name, listIds: [] };
+        boardsLookup[id] = { boardID: id, title: b.name, listIds: [] };
         return id;
       });
 
@@ -67,7 +67,6 @@ export default function Home() {
           cols[key].listIds.push(lid);
         });
 
-        // **sort each column’s listIds by the saved position**
         Object.values(cols).forEach((col) => {
           col.listIds.sort(
             (a, b) =>
