@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1,
+        "name": "Project Roadmap",
+        "position": 0,
+        "ownerUid": "uid_ABC123",
+        "createdBy": "uid_ABC123",
+        "updatedBy": "uid_DEF456",
+        "createdAt": "2025-01-15T09:30:00.000Z",
+        "updatedAt": "2025-04-20T14:45:00.000Z"
+    },
+    {
+        "id": 2,
+        "name": "Team Sprint",
+        "position": 1,
+        "ownerUid": "uid_DEF456",
+        "createdBy": "uid_DEF456",
+        "updatedBy": "uid_DEF456",
+        "createdAt": "2025-02-01T11:00:00.000Z",
+        "updatedAt": "2025-05-10T08:20:00.000Z"
+    }
+]

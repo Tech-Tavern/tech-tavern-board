@@ -1,39 +1,25 @@
-import { useState } from "react";
-import "./index.css";
-import Nav from "./components/Nav";
-import Board from "./components/Board";
-import initialData from "./data/initialData";
+import { Routes, Route } from "react-router-dom";
+AuthProvider;
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import SignIn from "./components/SignIn";
+import { AuthProvider } from "./authContext";
+import Home from "./components/Home";
 
 export default function App() {
-  const [data, setData] = useState(initialData);
-  const updateListColor = (listId, newColor) => {
-    setData((prev) => ({
-      ...prev,
-      lists: {
-        ...prev.lists,
-        [listId]: {
-          ...prev.lists[listId],
-          color: newColor,
-        },
-      },
-    }));
-  };
   return (
-    <>
-      <Nav />
-      <main className="">
-        {data.boardOrder.map((id) => (
-          <div key={id} className="h-screen">
-            
-            <Board
-              boardId={id}
-              data={data}
-              setData={setData}
-              updateListColor={updateListColor}
-            />
-          </div>
-        ))}
-      </main>
-    </>
+    <AuthProvider>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/signin" element={<SignIn />} />
+      </Routes>
+    </AuthProvider>
   );
 }

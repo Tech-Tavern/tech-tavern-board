@@ -1,0 +1,30 @@
+[
+    {
+        "id": 100,
+        "listId": 10,
+        "title": "Set up project repo",
+        "description": "Initialize GitHub repo, add README and license",
+        "color": "default",
+        "position": 0,
+        "completed": false,
+        "archived": false,
+        "createdBy": "uid_ABC123",
+        "updatedBy": "uid_ABC123",
+        "createdAt": "2025-01-15T09:40:00.000Z",
+        "updatedAt": "2025-01-15T09:40:00.000Z"
+    },
+    {
+        "id": 101,
+        "listId": 10,
+        "title": "Define schema",
+        "description": "Draft database schema and share with team",
+        "color": "#E0E7FF",
+        "position": 1,
+        "completed": true,
+        "archived": false,
+        "createdBy": "uid_DEF456",
+        "updatedBy": "uid_DEF456",
+        "createdAt": "2025-01-15T10:00:00.000Z",
+        "updatedAt": "2025-02-01T12:15:00.000Z"
+    }
+]
