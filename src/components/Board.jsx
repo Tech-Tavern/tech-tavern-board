@@ -1,12 +1,14 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import List from "./List";
-import { createList, updateList } from "../api/lists";
+import { createList, deleteList, updateList } from "../api/lists";
 import { useAuth } from "../authContext";
+import { useState } from "react";
 
 export default function Board({ boardId, data, setData, updateListColor }) {
   const board = data.boards[boardId];
   console.log("Board data:", board);
   const { user } = useAuth();
+  const [isDraggingList, setIsDraggingList] = useState(false);
 
   const handleAddList = async (afterListId) => {
     const afterList = data.lists[afterListId];
@@ -19,31 +21,28 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       id: tempId,
       boardId,
       title: "New List",
-      color: "#FFFFFF",
+      color: `#${Math.floor(Math.random() * 0x1000000)
+        .toString(16)
+        .padStart(6, "0")}`,
       position: 0,
       columnPos: 0,
       cardIds: [],
     };
 
-    // 2) update state optimistically
     setData((prev) => {
       const b = prev.boards[boardId];
+      console.log("Board data (b):", b);
 
-      // always inject the new list object
       const newLists = { ...prev.lists, [tempId]: tempList };
 
-      // decide how to patch the board
       let boardPatch;
       if (b.columns) {
-        // multi-column mode
-        // find which column the "after" list is in
         const colId = b.columnOrder.find((cid) =>
           b.columns[cid].listIds.includes(afterListId)
         );
         const oldIds = b.columns[colId].listIds;
         const idx = oldIds.indexOf(afterListId);
 
-        // insert new tempId into that column’s listIds
         const newCols = {
           ...b.columns,
           [colId]: {
@@ -79,7 +78,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       };
     });
 
-    // 3) send to server, then replace tempId with real id
     try {
       const saved = await createList(
         boardId,
@@ -92,16 +90,12 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       );
 
       setData((prev) => {
-        // remove temp
         const { [tempId]: _, ...rest } = prev.lists;
-        // inject real
         const updatedLists = { ...rest, [saved.id]: { ...saved, cardIds: [] } };
 
-        // swap IDs in whichever ordering array is active
         const b = prev.boards[boardId];
         let newBoard;
         if (b.columns) {
-          // multi-column: map through each column’s listIds
           const newCols = {};
           for (const cid of b.columnOrder) {
             newCols[cid] = {
@@ -113,7 +107,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
           }
           newBoard = { ...b, columns: newCols, columnOrder: b.columnOrder };
         } else {
-          // single-column
           newBoard = {
             ...b,
             listIds: b.listIds.map((id) =>
@@ -133,7 +126,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       });
     } catch (err) {
       console.error("Failed to create list:", err);
-      // optionally roll back the optimistic update
     }
   };
 
@@ -157,45 +149,52 @@ export default function Board({ boardId, data, setData, updateListColor }) {
     }
   };
 
-  const handleDeleteList = (listId) => {
-    setData((prev) => {
-      const b = prev.boards[boardId];
-      const { [listId]: _, ...remainingLists } = prev.lists;
-      const newListIds = (b.listIds ?? []).filter((id) => id !== listId);
+  const handleDeleteList = async (listId) => {
+    try {
+      await deleteList(boardId, listId);
 
-      let newColumns = b.columns;
-      let newColumnOrder = b.columnOrder;
-      if (b.columns) {
-        const colsEntries = Object.entries(b.columns)
-          .map(([colId, col]) => {
-            const filtered = col.listIds.filter((id) => id !== listId);
-            return [colId, { ...col, listIds: filtered }];
-          })
-          .filter(([, col]) => col.listIds.length > 0);
+      setData((prev) => {
+        const b = prev.boards[boardId];
+        const { [listId]: _, ...remainingLists } = prev.lists;
+        const newListIds = (b.listIds ?? []).filter((id) => id !== listId);
 
-        newColumns = Object.fromEntries(colsEntries);
-        newColumnOrder = (b.columnOrder ?? []).filter(
-          (colId) => newColumns[colId]
-        );
-      }
+        let newColumns = b.columns;
+        let newColumnOrder = b.columnOrder;
+        if (b.columns) {
+          const colsEntries = Object.entries(b.columns)
+            .map(([colId, col]) => {
+              const filtered = col.listIds.filter((id) => id !== listId);
+              return [colId, { ...col, listIds: filtered }];
+            })
+            .filter(([, col]) => col.listIds.length > 0);
 
-      return {
-        ...prev,
-        lists: remainingLists,
-        boards: {
-          ...prev.boards,
-          [boardId]: {
-            ...b,
-            listIds: newListIds,
-            ...(b.columns && {
-              columns: newColumns,
-              columnOrder: newColumnOrder,
-            }),
+          newColumns = Object.fromEntries(colsEntries);
+          newColumnOrder = (b.columnOrder ?? []).filter(
+            (colId) => newColumns[colId]
+          );
+        }
+
+        return {
+          ...prev,
+          lists: remainingLists,
+          boards: {
+            ...prev.boards,
+            [boardId]: {
+              ...b,
+              listIds: newListIds,
+              ...(b.columns && {
+                columns: newColumns,
+                columnOrder: newColumnOrder,
+              }),
+            },
           },
-        },
-      };
-    });
+        };
+      });
+    } catch (err) {
+      console.error("Failed to delete list:", err);
+    }
   };
+
 
   const handleRenameCard = (cardId, newContent) => {
     setData((prev) => ({
@@ -245,6 +244,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
   };
 
   const onDragEnd = async (result) => {
+    setIsDraggingList(false);
     const { source, destination, draggableId, type } = result;
     if (!destination) return;
 
@@ -261,7 +261,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         };
         const newOrder = [...(b.columnOrder || []), newColId];
 
-        // Remove from old column
         const fromCols = { ...newCols };
         const srcListIds = [...fromCols[source.droppableId].listIds];
         srcListIds.splice(source.index, 1);
@@ -270,7 +269,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
           listIds: srcListIds,
         };
 
-        // Add to new column
         const tgtListIds = [
           ...fromCols[newColId].listIds,
           draggableId.replace(/^list-/, ""),
@@ -358,10 +356,8 @@ export default function Board({ boardId, data, setData, updateListColor }) {
           },
         };
 
-        // Remove from source
         newCols[fromCol].listIds.splice(source.index, 1);
 
-        // Insert into destination
         newCols[toCol].listIds.splice(destination.index, 0, listId);
 
         return {
@@ -376,11 +372,10 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         };
       });
 
-      // Calculate new positions explicitly for backend sync
       const nextIds = newCols[toCol].listIds;
       const numeric = /^\d+$/;
       const payload = nextIds
-        .filter((id) => numeric.test(id)) // skip temp ids
+        .filter((id) => numeric.test(id))
         .map((id, idx) => ({
           id: Number(id),
           position: idx,
@@ -419,11 +414,19 @@ export default function Board({ boardId, data, setData, updateListColor }) {
         direction="vertical"
         type="LIST"
       >
-        {(prov) => (
+        {(prov, snapshot) => (
           <div
             ref={prov.innerRef}
             {...prov.droppableProps}
-            className="min-w-[280px] p-4 flex flex-col"
+            className={`
+        min-w-[280px] p-4 flex flex-col
+        transition-all duration-200
+        ${
+          snapshot.isDraggingOver
+            ? "bg-white/10 ring-2 ring-indigo-400 ring-offset-2 rounded-lg"
+            : "bg-transparent"
+        }
+      `}
           >
             <h2 className="font-bold mb-2">{column.title}</h2>
 
@@ -463,6 +466,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
                 </Draggable>
               );
             })}
+
             {prov.placeholder}
           </div>
         )}
@@ -471,7 +475,13 @@ export default function Board({ boardId, data, setData, updateListColor }) {
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext
+      onDragStart={() => setIsDraggingList(true)}
+      onDragEnd={(result) => {
+        setIsDraggingList(false);
+        onDragEnd(result); // your existing logic
+      }}
+    >
       <h1 className="bg-indigo-500 text-white pl-4 text-2xl font-bold py-4">
         {board.title}
       </h1>
@@ -479,36 +489,69 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       <div className="flex h-screen overflow-x-auto p-6 bg-gradient-to-tl from-[#1a1c2b] via-[#23263a] to-[#2d3250]">
         {(board.columnOrder ?? ["col-default"]).map(renderColumn)}
 
-        {/* This droppable lets you create a new column by dragging a list here */}
         <Droppable
           droppableId="__new_column__"
           direction="vertical"
           type="LIST"
         >
-          {(provided, snapshot) => (
+          {(prov, snap) => (
             <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
+              ref={prov.innerRef}
+              {...prov.droppableProps}
               className={`
-        min-w-[286px] mx-4 flex-shrink-0 p-4 flex items-center justify-center text-gray-600
-        transition-all duration-200
-
-        border-2 border-dashed border-transparent
-
-        /* solid outline + background when dragging over */
-        ${snapshot.isDraggingOver ? "border-white bg-white/10" : ""}
-      `}
+              box-border              
+              min-w-[296px] mx-5 p-4 flex flex-col items-center justify-center
+              transition-opacity duration-300 ease-in-out rounded-lg
+          
+              border-4 border-dashed
+              ${
+                snap.isDraggingOver
+                  ? "border-white bg-white/20"
+                  : "border-white/30 bg-transparent"
+              }
+          
+              ${
+                isDraggingList ? "opacity-100" : "opacity-0 pointer-events-none"
+              }
+              ${isDraggingList && !snap.isDraggingOver ? "animate-pulse" : ""}
+            `}
             >
-              {" "}
-              <span className="text-white font-semibold">
-                Drop here to create a column
-              </span>
-              {snapshot.isDraggingOver ? (
-                <span className="text-white font-semibold">
-                </span>
+              {snap.isDraggingOver ? (
+                <>
+                  <svg
+                    className="w-6 h-6 mb-1 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-white/70 text-sm">
+                    Release to create column
+                  </span>
+                </>
               ) : (
-                provided.placeholder
+                <>
+                  <svg
+                    className="w-6 h-6 mb-1 text-white/70"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-white/70 text-sm">
+                    Drag here to add a column
+                  </span>
+                </>
               )}
+              {prov.placeholder}
             </div>
           )}
         </Droppable>

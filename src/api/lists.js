@@ -42,3 +42,20 @@ export async function updateList(boardId, listId, payload) {
   if (!res.ok) throw new Error(`Could not update list (${res.status})`);
   return res.json();
 }
+
+export async function deleteList(boardId, listId) {
+  const headers = {
+    ...(await getUidHeader()),
+  };
+
+  const res = await fetch(`${baseUrl}/boards/${boardId}/lists/${listId}`, {
+    method: "DELETE",
+    headers,
+  });
+
+  if (!res.ok) {
+    throw new Error(`Could not delete list (${res.status})`);
+  }
+
+  return;
+}
