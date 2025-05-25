@@ -18,7 +18,6 @@ export default function Home() {
 
   useEffect(() => {
     async function loadAll() {
-      // 1) fetch boards
       const boardsArr = await fetchMyBoards();
 
       boardsArr.sort((a, b) => Number(a.position) - Number(b.position));
@@ -30,7 +29,6 @@ export default function Home() {
         return id;
       });
 
-      // 2) fetch lists per board
       const listsLookup = {};
       for (const boardId of boardOrderLocal) {
         let listsArr = [];
@@ -57,33 +55,27 @@ export default function Home() {
       }
 
       for (const boardId of boardOrderLocal) {
-        // Determine max column index from existing lists
         const colIndices = boardsLookup[boardId].listIds.map((lid) =>
           Number(listsLookup[lid].columnPos ?? 0)
         );
         const maxIdx = colIndices.length ? Math.max(...colIndices) : 0;
 
-        // Seed cols with empty buckets for 0..maxIdx
         const cols = {};
         for (let i = 0; i <= maxIdx; i++) {
           cols[`col-${i}`] = { id: `col-${i}`, listIds: [] };
         }
 
-        // Group lists into their respective column buckets
         boardsLookup[boardId].listIds.forEach((lid) => {
           const colIdx = Number(listsLookup[lid].columnPos ?? 0);
           cols[`col-${colIdx}`].listIds.push(lid);
         });
 
-        // Sort each column's listIds by position
-        // Reset each list's position to its index within the column (0-based)
         Object.values(cols).forEach((col) => {
           col.listIds.forEach((lid, idx) => {
             listsLookup[lid].position = idx;
           });
         });
 
-        // Build columnOrder in ascending numeric order
         const columnOrder = Object.keys(cols).sort(
           (a, b) =>
             Number(a.replace("col-", "")) - Number(b.replace("col-", ""))
@@ -93,7 +85,6 @@ export default function Home() {
         boardsLookup[boardId].columnOrder = columnOrder;
       }
 
-      // 3) fetch cards per list
       const cardsLookup = {};
       for (const listId of Object.keys(listsLookup)) {
         let cardsArr = [];
@@ -112,7 +103,6 @@ export default function Home() {
         }
       }
 
-      // commit data and initial selection
       setData({
         boards: boardsLookup,
         boardOrder: boardOrderLocal,

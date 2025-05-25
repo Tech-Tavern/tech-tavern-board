@@ -343,7 +343,6 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       setData((prev) => {
         const prevBoard = prev.boards[boardId];
 
-        // Deep copy columns
         newCols = {
           ...prevBoard.columns,
           [fromCol]: {
@@ -479,7 +478,7 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       onDragStart={() => setIsDraggingList(true)}
       onDragEnd={(result) => {
         setIsDraggingList(false);
-        onDragEnd(result); // your existing logic
+        onDragEnd(result); 
       }}
     >
       <h1 className="bg-indigo-500 text-white pl-4 text-2xl font-bold py-4">
