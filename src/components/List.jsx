@@ -23,7 +23,6 @@ export default function List({
     visible: false, x: 0, y: 0 
   }, console.log("L ID: " + list.id + " POS: " + list.position, "COL: " + list.columnPos));
 
-  // inline‐title edit
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(title);
   const titleInputRef = useRef(null);
