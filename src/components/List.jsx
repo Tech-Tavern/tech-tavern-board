@@ -9,12 +9,11 @@ export default function List({
   onAddList,
   onRenameList,
   onDeleteList,
-  onAddCard, // now expects (listId, text)
+  onAddCard, 
   onRenameCard,
 }) {
   const { id, title, color } = list;
 
-  // context‐menu state
   const [menu, setMenu] = useState({ visible: false, x: 0, y: 0 });
   const handleContextMenu = (e) => {
     e.preventDefault();
@@ -94,7 +93,6 @@ export default function List({
     }
   };
 
-  // helper to make background translucent
   const hexToRgba = (hex, alpha = 1) => {
     const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
     if (!m) return hex;
