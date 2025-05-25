@@ -45,7 +45,6 @@ export default function List({
     }
   };
 
-  // inline‐card rename
   const [editingCardId, setEditingCardId] = useState(null);
   const [cardInput, setCardInput] = useState("");
   const cardInputRef = useRef(null);
