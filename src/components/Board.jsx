@@ -6,7 +6,6 @@ import { useState } from "react";
 
 export default function Board({ boardId, data, setData, updateListColor }) {
   const board = data.boards[boardId];
-  console.log("Board data:", board);
   const { user } = useAuth();
   const [isDraggingList, setIsDraggingList] = useState(false);
 
@@ -31,10 +30,10 @@ export default function Board({ boardId, data, setData, updateListColor }) {
 
     setData((prev) => {
       const b = prev.boards[boardId];
-      console.log("Board data (b):", b);
+      console.log("Prev list: ", prev.lists  );
 
       const newLists = { ...prev.lists, [tempId]: tempList };
-
+      console.log("New list: ", newLists);
       let boardPatch;
       if (b.columns) {
         const colId = b.columnOrder.find((cid) =>
