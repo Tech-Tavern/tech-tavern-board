@@ -15,7 +15,7 @@ export async function fetchLists(boardId) {
   return res.json();
 }
 
-export async function createList(boardId, payload) {
+export async function createListApi(boardId, payload) {
   const headers = {
     "Content-Type": "application/json",
     ...(await getUidHeader()),
@@ -29,7 +29,7 @@ export async function createList(boardId, payload) {
   return res.json();
 }
 
-export async function updateList(boardId, listId, payload) {
+export async function updateListApi(boardId, listId, payload) {
   const headers = {
     "Content-Type": "application/json",
     ...(await getUidHeader()),
@@ -43,7 +43,7 @@ export async function updateList(boardId, listId, payload) {
   return res.json();
 }
 
-export async function deleteList(boardId, listId) {
+export async function deleteListApi(boardId, listId) {
   const headers = {
     ...(await getUidHeader()),
   };
