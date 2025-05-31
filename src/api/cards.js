@@ -18,7 +18,7 @@ export async function fetchCards(boardId, listId) {
   return res.json();
 }
 
-export async function createCard(boardId, listId, payload) {
+export async function createCardApi(boardId, listId, payload) {
   const headers = {
     "Content-Type": "application/json",
     ...(await getUidHeader()),
@@ -32,5 +32,22 @@ export async function createCard(boardId, listId, payload) {
     }
   );
   if (!res.ok) throw new Error(`Could not create card (${res.status})`);
+  return res.json();
+}
+
+export async function updateCardApi(boardId, listId, cardId, payload) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(await getUidHeader()),
+  };
+  const res = await fetch(
+    `${baseUrl}/boards/${boardId}/lists/${listId}/cards/${cardId}`,
+    {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(payload),
+    }
+  );
+  if (!res.ok) throw new Error(`Could not update card (${res.status})`);
   return res.json();
 }

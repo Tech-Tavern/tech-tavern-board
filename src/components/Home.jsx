@@ -3,7 +3,7 @@ import Nav from "./Nav";
 import Sidebar from "./Sidebar";
 import Board from "./Board";
 import { fetchMyBoards } from "../api/boards";
-import { fetchLists, updateList } from "../api/lists";
+import { fetchLists, updateListApi } from "../api/lists";
 import { fetchCards } from "../api/cards";
 
 export default function Home() {
@@ -45,8 +45,8 @@ export default function Home() {
             id: lid,
             title: l.title,
             cardIds: [],
-            position: l.position,
-            columnPos: l.columnPos,
+            position: Number(l.position),
+            columnPos: Number(l.columnPos),
             color: l.color,
             boardId: String(l.boardId),
           };
@@ -98,7 +98,7 @@ export default function Home() {
 
         for (const c of cardsArr) {
           const cid = String(c.id);
-          cardsLookup[cid] = { id: cid, content: c.title, listId };
+          cardsLookup[cid] = { id: cid, title: c.title, listId };
           listsLookup[listId].cardIds.push(cid);
         }
       }
@@ -130,7 +130,7 @@ export default function Home() {
     }));
 
     try {
-      await updateList(selectedBoardId, Number(listId), { color: newColor });
+      await updateListApi(selectedBoardId, Number(listId), { color: newColor });
     } catch (err) {
       console.error("Failed to save color:", err);
       setData((prev) => ({

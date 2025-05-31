@@ -1,28 +1,41 @@
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { useState, useRef, useEffect } from "react";
 import ListMenu from "./menus/ListMenu";
+import useCardHooks from "../hooks/useCardHooks";
 
 export default function List({
+  boardId,
+  data,
+  setData,
   list,
   cards,
   updateListColor,
   onAddList,
   onRenameList,
   onDeleteList,
-  onAddCard, 
-  onRenameCard,
 }) {
   const { id, title, color } = list;
 
+  // Pass the full state and setter into the hook
+  const { addCard, renameCard } = useCardHooks(boardId, data, setData);
+
   const [menu, setMenu] = useState({ visible: false, x: 0, y: 0 });
+
   const handleContextMenu = (e) => {
     e.preventDefault();
     setMenu({ visible: true, x: e.clientX, y: e.clientY });
   };
-  const hideMenu = () => setMenu({ 
-    visible: false, x: 0, y: 0 
-  }, console.log("L ID: " + list.id + " POS: " + list.position, "COL: " + list.columnPos));
 
+  const hideMenu = () =>
+    setMenu(
+      { visible: false, x: 0, y: 0 }
+      // console.log(
+      //   "L ID: " + id + " POS: " + list.position,
+      //   "COL: " + list.columnPos
+      // )
+    );
+
+  // Title editing
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(title);
   const titleInputRef = useRef(null);
@@ -45,21 +58,37 @@ export default function List({
     }
   };
 
+  // Card renaming
   const [editingCardId, setEditingCardId] = useState(null);
   const [cardInput, setCardInput] = useState("");
   const cardInputRef = useRef(null);
+
   useEffect(() => {
     if (editingCardId && cardInputRef.current) {
       cardInputRef.current.focus();
       cardInputRef.current.select();
     }
   }, [editingCardId]);
+
   const finishCardEdit = () => {
+    console.group("Before renameCard");
+    console.log("data.lists:", data.lists);
+    console.log("data.cards:", data.cards);
+    console.groupEnd();
     const val = cardInput.trim();
-    if (val) onRenameCard(editingCardId, val);
+    if (val) {
+      renameCard(id, editingCardId, val);
+    }
     setEditingCardId(null);
     setCardInput("");
+    setTimeout(() => {
+      console.group("After renameCard");
+      console.log("data.lists:", data.lists);
+      console.log("data.cards:", data.cards);
+      console.groupEnd();
+    }, 0);
   };
+
   const handleCardKey = (e) => {
     if (e.key === "Enter") finishCardEdit();
     if (e.key === "Escape") {
@@ -68,6 +97,7 @@ export default function List({
     }
   };
 
+  // Adding new card
   const [isAdding, setIsAdding] = useState(false);
   const [newCardText, setNewCardText] = useState("");
   const addInputRef = useRef(null);
@@ -78,7 +108,7 @@ export default function List({
   }, [isAdding]);
   const finishAdd = () => {
     const text = newCardText.trim();
-    if (text) onAddCard(id, text);
+    if (text) addCard(id, text);
     setIsAdding(false);
     setNewCardText("");
   };
@@ -98,6 +128,14 @@ export default function List({
       bb,
       16
     )}, ${alpha})`;
+  };
+
+  const logDetails = () => {
+    // console.log("list.cardIds:", list.cardIds);
+    console.log(
+      "cards prop:",
+      cards.map((c) => c.id)
+    );
   };
 
   return (
@@ -139,8 +177,8 @@ export default function List({
           >
             {cards.map((card, index) => (
               <Draggable
-                key={card.id}
-                draggableId={String(card.id)}
+                key={`${card.id}`}
+                draggableId={`${list.id}-${card.id}`}
                 index={index}
               >
                 {(prov) => (
@@ -162,15 +200,12 @@ export default function List({
                       <div
                         onDoubleClick={() => {
                           setEditingCardId(card.id);
-                          setCardInput(card.content);
+                          setCardInput(card.title);
+                          logDetails();
                         }}
-                        className="
-                          border-2 border-transparent hover:border-white p-2 rounded shadow-sm text-white
-                          bg-gradient-to-tl from-[#1a1c2b]/80 via-[#23263a]/80 to-[#2d3250]/80
-                          cursor-grab
-                        "
+                        className="border-2 border-transparent hover:border-white p-2 rounded shadow-sm text-white bg-gradient-to-tl from-[#1a1c2b]/80 via-[#23263a]/80 to-[#2d3250]/80 cursor-grab"
                       >
-                        {card.content}
+                        {card.title}
                       </div>
                     )}
                   </div>
@@ -188,12 +223,7 @@ export default function List({
                 onBlur={finishAdd}
                 onKeyDown={handleAddKey}
                 placeholder="Enter card title"
-                className="
-                w-full px-2 py-1 text-sm rounded border border-white
-                focus:outline-none
-                focus:ring-2
-                focus:ring-white/75
-              "
+                className="w-full px-2 py-1 text-sm rounded border border-white focus:outline-none focus:ring-2 focus:ring-white/75"
               />
             ) : (
               <button
