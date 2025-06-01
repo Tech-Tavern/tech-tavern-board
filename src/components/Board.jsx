@@ -3,6 +3,7 @@ import List from "./List";
 import { useState } from "react";
 import useListHooks from "../hooks/useListHooks";
 import { updateListApi } from "../api/lists";
+import useCardHooks from "../hooks/useCardHooks";
 
 export default function Board({ boardId, data, setData, updateListColor }) {
   const board = data.boards[boardId];
@@ -12,6 +13,8 @@ export default function Board({ boardId, data, setData, updateListColor }) {
     data,
     setData
   );
+
+  const { moveCard } = useCardHooks(boardId, data, setData);
 
   const [isDraggingList, setIsDraggingList] = useState(false);
   const [selectedListId, setSelectedListId] = useState(null);
@@ -71,39 +74,16 @@ export default function Board({ boardId, data, setData, updateListColor }) {
       return;
     }
 
+    // inside your onDragEnd handler:
     if (type === "CARD") {
       const srcListId = source.droppableId.replace(/^list-/, "");
       const dstListId = destination.droppableId.replace(/^list-/, "");
-      const cardId = draggableId.replace(/^card-/, "");
+      // (we don’t actually need `const cardId = …` here because moveCard only needs indices)
+      const sourceIdx = source.index;
+      const destinationIdx = destination.index;
 
-      setData((prev) => {
-        const start = prev.lists[srcListId];
-        const finish = prev.lists[dstListId];
-
-        if (start === finish) {
-          const ids = Array.from(start.cardIds);
-          ids.splice(source.index, 1);
-          ids.splice(destination.index, 0, cardId);
-          return {
-            ...prev,
-            lists: { ...prev.lists, [start.id]: { ...start, cardIds: ids } },
-          };
-        }
-
-        const startIds = Array.from(start.cardIds);
-        startIds.splice(source.index, 1);
-        const finishIds = Array.from(finish.cardIds);
-        finishIds.splice(destination.index, 0, cardId);
-
-        return {
-          ...prev,
-          lists: {
-            ...prev.lists,
-            [start.id]: { ...start, cardIds: startIds },
-            [finish.id]: { ...finish, cardIds: finishIds },
-          },
-        };
-      });
+      // Call moveCard (from useCardHooks) instead of manually splicing state here:
+      moveCard(srcListId, dstListId, sourceIdx, destinationIdx);
       return;
     }
 

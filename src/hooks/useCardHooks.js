@@ -40,6 +40,7 @@ export default function useCardHooks(boardId, dataState, setDataState) {
 
       try {
         const createdCard = await createCardApi(boardId, listId, newCard);
+        // Replace the temp card ID with the real one from the server
         setDataState((prev) => ({
           ...prev,
           cards: {
@@ -56,7 +57,7 @@ export default function useCardHooks(boardId, dataState, setDataState) {
 
   const renameCard = useCallback(
     async (listId, cardId, newTitle) => {
-      // Optimistic rename
+      // Optimistic rename in state
       setDataState((prev) => ({
         ...prev,
         cards: {
@@ -73,6 +74,7 @@ export default function useCardHooks(boardId, dataState, setDataState) {
         const updated = await updateCardApi(boardId, listId, cardId, {
           title: newTitle,
         });
+        // Replace with server‐returned object
         setDataState((prev) => ({
           ...prev,
           cards: {
@@ -87,5 +89,140 @@ export default function useCardHooks(boardId, dataState, setDataState) {
     [boardId, setDataState]
   );
 
-  return { isLoading, addCard, renameCard };
+  const moveCard = useCallback(
+    async (sourceListId, destinationListId, sourceIndex, destinationIndex) => {
+      const allLists = dataState.lists;
+      const allCards = dataState.cards;
+
+      const cardId = allLists[sourceListId].cardIds[sourceIndex];
+      if (!cardId) return;
+
+      const sourceCardIds = Array.from(allLists[sourceListId].cardIds);
+      const destCardIds = Array.from(allLists[destinationListId].cardIds);
+
+      let updatedSourceCardIds, updatedDestCardIds;
+
+      if (sourceListId === destinationListId) {
+        sourceCardIds.splice(sourceIndex, 1);
+        sourceCardIds.splice(destinationIndex, 0, cardId);
+        updatedSourceCardIds = sourceCardIds;
+        updatedDestCardIds = sourceCardIds;
+      } else {
+        sourceCardIds.splice(sourceIndex, 1);
+        destCardIds.splice(destinationIndex, 0, cardId);
+        updatedSourceCardIds = sourceCardIds;
+        updatedDestCardIds = destCardIds;
+      }
+
+      const newLists = {
+        ...allLists,
+        [sourceListId]: {
+          ...allLists[sourceListId],
+          cardIds: updatedSourceCardIds,
+        },
+        [destinationListId]: {
+          ...allLists[destinationListId],
+          cardIds: updatedDestCardIds,
+        },
+      };
+
+      const newCards = { ...allCards };
+
+      if (sourceListId !== destinationListId) {
+        newCards[cardId] = {
+          ...newCards[cardId],
+          listId: destinationListId,
+        };
+      }
+
+      updatedSourceCardIds.forEach((cId, idx) => {
+        newCards[cId] = {
+          ...newCards[cId],
+          position: idx,
+        };
+      });
+
+      if (sourceListId !== destinationListId) {
+        updatedDestCardIds.forEach((cId, idx) => {
+          newCards[cId] = {
+            ...newCards[cId],
+            position: idx,
+          };
+        });
+      }
+
+      setDataState((prev) => ({
+        ...prev,
+        lists: newLists,
+        cards: newCards,
+      }));
+
+      try {
+        const updates = [];
+
+        if (sourceListId === destinationListId) {
+          updatedSourceCardIds.forEach((cId, idx) => {
+            console.log(
+              "[moveCard] PUT",
+              `/boards/${boardId}/lists/${sourceListId}/cards/${cId}`,
+              { position: idx }
+            );
+            updates.push(
+              updateCardApi(boardId, sourceListId, cId, { position: idx })
+            );
+          });
+        } else {
+          // Cross-list move:
+          updatedSourceCardIds.forEach((cId, idx) => {
+            console.log(
+              "[moveCard] PUT",
+              `/boards/${boardId}/lists/${sourceListId}/cards/${cId}`,
+              { position: idx }
+            );
+            updates.push(
+              updateCardApi(boardId, sourceListId, cId, { position: idx })
+            );
+          });
+          updatedDestCardIds.forEach((cId, idx) => {
+            if (cId === cardId) {
+              console.log(
+                "[moveCard] PUT",
+                `/boards/${boardId}/lists/${destinationListId}/cards/${cId}`,
+                { listId: BigInt(destinationListId), position: idx }
+              );
+              updates.push(
+                updateCardApi(boardId, destinationListId, cId, {
+                  listId: destinationListId,
+                  position: idx,
+                })
+              );
+            } else {
+              console.log(
+                "[moveCard] PUT",
+                `/boards/${boardId}/lists/${destinationListId}/cards/${cId}`,
+                { position: idx }
+              );
+              updates.push(
+                updateCardApi(boardId, destinationListId, cId, {
+                  position: idx,
+                })
+              );
+            }
+          });
+        }
+
+        await Promise.all(updates);
+      } catch (err) {
+        console.error("Failed to persist moved‐cards:", err);
+      }
+    },
+    [boardId, dataState.lists, dataState.cards, setDataState]
+  );
+
+  return {
+    isLoading,
+    addCard,
+    renameCard,
+    moveCard,
+  };
 }
